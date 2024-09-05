@@ -1,0 +1,116 @@
+
+import random
+
+# Definimos los emojis para el juego
+emojis = {
+    "vacio": "⬜",
+    "bueno": "🤠",
+    "malo": "👹",
+    "salida": "🚪",
+    "pared": "🚧"
+}
+
+# Función para crear el tablero básico
+
+def hacerTablero(tamaño, emojis):
+
+    """Crea el tablero y coloca al jugador, enemigo, y la salida."""
+    tablero = [[emojis["vacio"]]*tamaño for i in range(tamaño)]
+    
+    # Posicionamos al jugador, enemigo y salida de forma aleatoria
+
+    pos_bueno = random.randint(0, tamaño - 1)
+    pos_malo = random.randint(0, tamaño - 1)
+    pos_exit = random.randint(0, tamaño - 1)
+    
+    # Asegurarnos de que no colisionen al inicio
+    while pos_exit == pos_malo:
+        pos_exit = random.randint(0, tamaño - 1)
+    
+    tablero[pos_bueno][0] = emojis["bueno"]
+    tablero[pos_malo][0] = emojis["malo"]
+    tablero[pos_exit][-1] = emojis["salida"]
+    
+    # Colocamos algunos obstáculos
+    poner_paredes(tablero, emojis["pared"])
+    
+    return tablero, (pos_bueno, 0), (pos_malo, 0), (pos_exit, tamaño - 1)
+
+# Función para colocar paredes en el tablero
+def poner_paredes(tablero, emoji):
+    """Coloca obstáculos aleatoriamente en el tablero."""
+    for _ in range(10):
+        f = random.randint(0, len(tablero) - 1)
+        c = random.randint(0, len(tablero) - 1)
+        tablero[f][c] = emoji
+
+# Función para mostrar el tablero
+
+def mostrarTablero(tablero):
+    for fila in tablero:
+        print(" ".join(fila))
+
+# Movimiento del jugador
+
+def mover_jugador(tablero, pos_bueno, direccion, tamaño):
+    f, c = pos_bueno
+    tablero[f][c] = emojis["vacio"]
+    
+    if direccion == 'w' and f > 0:
+        f -= 1
+    elif direccion == 's' and f < tamaño - 1:
+        f += 1
+    elif direccion == 'a' and c > 0:
+        c -= 1
+    elif direccion == 'd' and c < tamaño - 1:
+        c += 1
+    
+    if tablero[f][c] == emojis["pared"]:
+        return pos_bueno  # No permite moverse si hay una pared
+
+    tablero[f][c] = emojis["bueno"]
+    return (f, c)
+
+# Función para verificar si el jugador ganó o perdió
+
+def verificar_estado(pos_bueno, pos_malo, pos_exit, vidas):
+    if pos_bueno == pos_malo:
+        vidas -= 1
+        print("¡Has perdido una vida!")
+    if vidas == 0:
+        print("¡Juego terminado! Has perdido todas tus vidas.")
+        return False, vidas
+    if pos_bueno == pos_exit:
+        print("¡Has ganado!")
+        return False, vidas
+    return True, vidas
+
+# Función principal para controlar el juego
+
+def jugar():
+    tamaño = 5
+    tablero, pos_bueno, pos_malo, pos_exit = hacerTablero(tamaño, emojis)
+    vidas = 3
+    jugando = True
+    
+    while jugando:
+        mostrarTablero(tablero)
+        print(f"Vidas restantes: {vidas}")
+        
+        movimiento = input("Mover (W, A, S, D): ").lower()
+        if movimiento in ['w', 'a', 's', 'd']:
+            pos_bueno = mover_jugador(tablero, pos_bueno, movimiento, tamaño)
+            jugando, vidas = verificar_estado(pos_bueno, pos_malo, pos_exit, vidas)
+        else:
+            print("Movimiento inválido.")
+
+# Comentar la llamada al juego para evitar la ejecución automática
+# jugar()
+
+
+def main():
+
+    jugar()
+
+if __name__== "__main__":
+    main()
